@@ -1,0 +1,102 @@
+WEEK 3 Assignment
+
+
+Question 1
+def answer_one():
+    # YOUR CODE HERE
+    data = pd.read_csv('assets/fraud_data.csv')
+    result = len(data[data.Class == 1])/len(data)
+    
+    return result
+
+    
+answer_one()
+
+Question 2
+def answer_two():
+    from sklearn.dummy import DummyClassifier
+    from sklearn.metrics import recall_score
+
+    # YOUR CODE HERE
+    # Negative class (0) is most frequent
+    dummy_majority = DummyClassifier(strategy = 'most_frequent').fit(X_train, y_train)
+    # Therefore the dummy 'most_frequent' classifier always predicts class 0
+    y_dummy_predictions = dummy_majority.predict(X_test)
+    
+    acc_score = dummy_majority.score(X_test, y_test)
+    rec_score = recall_score(y_test, y_dummy_predictions) 
+    
+    return acc_score, rec_score
+    raise NotImplementedError()
+
+Question 3
+def answer_three():
+    from sklearn.metrics import recall_score, precision_score
+    from sklearn.svm import SVC
+    
+    # YOUR CODE HERE
+    
+    svm = SVC().fit(X_train, y_train)
+    y_pred = svm.predict(X_test)
+    
+    acc_score = svm.score(X_test, y_test)
+    rec_score = recall_score(y_test, y_pred)
+    prec_score = precision_score(y_test, y_pred)
+    
+    return acc_score, rec_score, prec_score
+    raise NotImplementedError()
+
+Question 4
+def answer_four():
+    from sklearn.metrics import confusion_matrix
+    from sklearn.svm import SVC
+    
+    # YOUR CODE HERE
+    
+    THRESHOLD = -220.0
+    params = {'C': 1e9, 'gamma': 1e-07}
+    y_score = SVC(**params).fit(X_train, y_train).decision_function(X_test)
+    y_score_adj = np.zeros_like(y_score)
+    y_score_adj[np.where(y_score >= THRESHOLD)] = 1
+       
+    confusion = confusion_matrix(y_test, y_score_adj)
+    
+    return confusion
+
+answer_four()
+
+Question 5
+def answer_five():
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import precision_recall_curve
+    from sklearn.metrics import roc_curve, auc
+        
+    lr = LogisticRegression()
+    y_proba_lr = lr.fit(X_train, y_train).predict_proba(X_test)
+    y_scores_lr = lr.fit(X_train, y_train).decision_function(X_test)
+    precision, recall, thresholds = precision_recall_curve(y_test, y_scores_lr)
+    fpr_lr, tpr_lr, _ = roc_curve(y_test, y_scores_lr)
+    
+    rec = float(recall[np.where(precision==0.75)])
+    tpr = float(tpr_lr[np.where((fpr_lr >= 0.159) & (fpr_lr <= 0.161))][0])
+    
+    return rec, tpr
+
+answer_five()
+
+Question 6
+def answer_six():    
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.linear_model import LogisticRegression
+
+    # YOUR CODE HERE
+    grid_values = {'penalty': ['l1', 'l2'], 'C':[0.01, 0.1, 1, 10, 100]}
+    
+    lr = LogisticRegression()
+    grid_lr = GridSearchCV(lr, param_grid = grid_values, scoring = 'recall')
+    grid_lr.fit(X_train, y_train)
+    result = grid_lr.cv_results_['mean_test_score'].reshape(-1, 2)
+    
+    return result
+
+answer_six()
